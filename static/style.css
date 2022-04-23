@@ -1,0 +1,44 @@
+body {
+    background-color: #9effcd;
+    display: block;
+}
+
+.centeredBox {
+    margin: 0 auto;
+    text-align: center;
+    width: 60%;
+    min-width: 512px;
+    max-width: 800px;
+    border: 1px solid black;
+    padding-bottom: 20px;
+}
+
+header {
+    border-bottom: 1px solid black;
+    text-align: center;
+    display: block;
+    padding-bottom: 10px;
+}
+
+
+/* Form styling */
+header form label {
+    background-color: #008800;
+    color: white;
+    padding: 2px;
+    border-radius: 5px;
+}
+
+header form textarea {
+    width: 270px;
+    height: 107px;
+}
+
+header form input {
+    width: 250px;
+}
+
+
+header button {
+    width: 200px;
+}

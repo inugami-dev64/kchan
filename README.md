@@ -7,7 +7,7 @@ In order to get started you will need MariaDB, Python and Flask
 ## Installing and configuring MariaDB
 On Debian based systems install following packages from repositories:  
 ```
-sudo apt install mariadb-server mariadb-plugin-connect mariadb-client
+sudo apt install mariadb-server mariadb-plugin-connect mariadb-client libmariadb-dev
 ```
 
 After the installation you will need to create a new MariaDB user and database with appropriate tables.

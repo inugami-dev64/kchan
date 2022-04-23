@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask_cors import CORS
 from models import DatabaseConnector, Board, Post
 
@@ -12,10 +12,14 @@ CORS(app)
 
 conn = DatabaseConnector.ConnectToDatabase()
 
-
 @app.route('/')
-def Test():
-    return "Server response successful"
+def Index():
+    return render_template('index.html')
+
+
+@app.route('/boards/<board_name>/')
+def ServeBoard(board_name: str):
+    return render_template('board.html')
 
 
 # Optional 'acr' parameter can be specified
