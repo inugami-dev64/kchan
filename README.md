@@ -62,8 +62,10 @@ Once MariaDB and python venv are configured you should be able to run the backen
 python3 server.py
 ```
 
+Now you can access the imageboard by going to `http://localhost:3000`.
+
 ## Creating boards
 It is recommended to create boards using MariaDB directly. SQL commands would be following:
 ```
-INSERT INTO boards(Acronym,Name) VALUES(<board-acronym>, <board-name>)
+INSERT INTO boards(Acronym,Name) VALUES("<board-acronym>", "<board-name>")
 ```
