@@ -12,7 +12,7 @@ class DatabaseConnector:
         try:
             conn = mariadb.connect(
                 user="kchan_backend",
-                password="s1QlvV32C0oA7WkUnC32",
+                password="password",
                 host='127.0.0.1',
                 database='kchan'
             )
