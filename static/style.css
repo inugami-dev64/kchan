@@ -21,24 +21,95 @@ header {
 }
 
 
+#notFound {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+#mainBoardContent {
+    display: block;
+}
+
+
+/* Thread styling */
+#mainBoardContent .thread {
+    border-bottom: 1px solid black;
+}
+
+#mainBoardContent .thread .threadHeader {
+    margin-top: 10px;
+    display: flex;
+    flex-grow: 1;
+    flex-wrap: wrap;
+    width: 100%;
+    flex-direction: row;
+}
+
+#mainBoardContent .thread .threadHeader b {
+    color: #3366ff;
+}
+
+#mainBoardContent .thread .threadHeader p {
+    margin-right: 5px;
+    flex-shrink: 0;
+    margin-top: 0;
+}
+
+#mainBoardContent .thread .threadHeader b, #mainBoardContent .thread .threadHeader a {
+    margin-right: 5px;
+    vertical-align: baseline;
+}
+
+#mainBoardContent .threadContent {
+    display: block;
+    margin-left: 30px;
+    overflow: auto;
+}
+
+#mainBoardContent .threadContent img {
+    max-width: 128px;
+    max-height: 128px;
+    height: auto;
+    position: relative;
+    padding: 10px;
+    float: left;
+    vertical-align: top;
+}
+
+#mainBoardContent .threadContent p, .post {
+    display: inline-block;
+    overflow-wrap: break-word;
+}
+
+#mainBoardContent .threadContent .post {
+    background-color: #7bc872;
+    border-radius: 5px;
+    margin-left: 30px;
+    padding: 0 10px;
+    width: auto;
+    margin-bottom: 10px;
+}
+
+
 /* Form styling */
-header form label {
+form label {
     background-color: #008800;
     color: white;
     padding: 2px;
     border-radius: 5px;
 }
 
-header form textarea {
+form textarea {
     width: 270px;
     height: 107px;
 }
 
-header form input {
+form input {
     width: 250px;
 }
 
 
-header button {
+button {
     width: 200px;
 }

@@ -1,4 +1,5 @@
 import mariadb
+import datetime
 from dataclasses import dataclass
 import sys
 import time
@@ -34,8 +35,9 @@ class Board:
     name: str
 
     @staticmethod
-    def Create(conn, acronym, name):
-        cur = conn.cursor()
+    def Create(acronym, name):
+        conn = DatabaseConnector.ConnectToDatabase()
+        cur = conn.cursor(buffered=True)
         board = Board(acronym, name)
 
         try:
@@ -45,16 +47,17 @@ class Board:
                 "VALUES(?, ?)",
                 (board.acronym, board.name)
             )
-            conn.commit()
         except mariadb.Error as e:
             print(f"Could not create new board: {e}")
             return {"errorMessage": e}
 
+        conn.close();
         return board.__dict__
 
     @staticmethod
-    def Read(conn, acronym):
-        cur = conn.cursor()
+    def Read(acronym):
+        conn = DatabaseConnector.ConnectToDatabase()
+        cur = conn.cursor(buffered=True)
         boards = {}
 
         if acronym != "":
@@ -78,11 +81,13 @@ class Board:
                 board = Board(Acronym, Name)
                 boards[board.acronym] = board.__dict__
 
+        conn.close()
         return boards
 
     @staticmethod
-    def Update(conn, acronym, name):
-        cur = conn.cursor()
+    def Update(acronym, name):
+        conn = DatabaseConnector.ConnectToDatabase()
+        cur = conn.cursor(buffered=True)
         board = Board(acronym, name)
 
         try:
@@ -97,11 +102,13 @@ class Board:
             print(f"Could not update board: {e}")
             return {"errorMessage": e}
 
+        conn.close();
         return board.__dict__
 
     @staticmethod
-    def Delete(conn, acronym):
-        cur = conn.cursor()
+    def Delete(acronym):
+        conn = DatabaseConnector.ConnectToDatabvase()
+        cur = conn.cursor(buffered=True)
         try:
             cur.execute(
                 "DELETE FROM boards "
@@ -113,6 +120,7 @@ class Board:
             print(f"Could not delete board: {e}")
             return {"errorMessage": e}
 
+        conn.close()
         return {"errorMessage": "Success"}
 
 
@@ -127,8 +135,9 @@ class Post:
     post_content: str
 
     @staticmethod
-    def Create(conn, board, reply_to, poster_ip, user_attachment, poster_name, post_content):
-        cur = conn.cursor()
+    def Create(board, reply_to, poster_ip, user_attachment, poster_name, post_content):
+        conn = DatabaseConnector.ConnectToDatabase()
+        cur = conn.cursor(buffered=True)
         post = Post(
             0,
             board,
@@ -152,24 +161,43 @@ class Post:
 
         if not is_found:
             return {"errorMessage": f"Invalid board name '{board}'"}
-        # Attempt to insert post
-        try:
-            cur.execute(
-                "INSERT INTO posts "
-                "(Board,ReplyTo,PosterIp,UserAttachment,PosterName,PostContent)"
-                "VALUES (?, ?, ?, ?, ?, ?)",
-                (board, reply_to, poster_ip, user_attachment, poster_name, post_content)
-            )
-        except mariadb.Error as e:
-            print(f"Error inserting post to database { e }")
-            return {"errorMessage": "Unexpected error occured when posting"}
 
-        conn.commit()
+        reply_to_str = datetime.datetime.fromtimestamp(reply_to).strftime('%Y-%m-%d %H:%M:%S')
+
+        # Attempt to insert post
+        if reply_to != 0:
+            try:
+                cur.execute(
+                    "INSERT INTO posts "
+                    "(Board,ReplyTo,PosterIp,UserAttachment,PosterName,PostContent)"
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (board, reply_to_str, poster_ip, user_attachment, poster_name, post_content)
+                )
+                conn.commit()
+            except mariadb.Error as e:
+                print(f"Error inserting post to database { e }")
+                return {"errorMessage": "Unexpected error occured when posting"}
+        else:
+            try:
+                cur.execute(
+                    "INSERT INTO posts "
+                    "(Board,PosterIp,UserAttachment,PosterName,PostContent)"
+                    "VALUES (?, ?, ?, ?, ?)",
+                    (board, poster_ip, user_attachment, poster_name, post_content)
+                )
+                conn.commit()
+            except mariadb.Error as e:
+                print(f"Error inserting post to database { e }")
+                return {"errorMessage": "Unexpected error occured when posting"}
+
+
+        conn.close()
         return post.__dict__
 
     @staticmethod
-    def Read(conn, board, reply_to):
-        cur = conn.cursor()
+    def Read(board, reply_to):
+        conn = DatabaseConnector.ConnectToDatabase()
+        cur = conn.cursor(buffered=True)
         # There two types of queries:
         #   1. Query all threads belonging to the board (reply_to == 0)
         #   2. Query replies to a certain thread (reply_to != 0)
@@ -178,21 +206,23 @@ class Post:
             "FROM posts "
             "WHERE UNIX_TIMESTAMP(ReplyTo)=? "
             "AND Board=? "
-            "ORDER BY Timestamp DESC",
+            "ORDER BY Timestamp",
             (reply_to, board)
         )
 
         posts = {}
         for Timestamp, Board, ReplyTo, UserAttachment, PosterName, PostContent in cur:
             ts = int(time.mktime(Timestamp.timetuple()))
-            post = Post(ts, Board, reply_to, "N/A", str(UserAttachment), str(PosterName), str(PostContent))
+            post = Post(ts, Board, int(reply_to), "N/A", str(UserAttachment), str(PosterName), str(PostContent))
             posts[str(post.timestamp)] = post.__dict__
 
+        conn.close()
         return posts
 
     @staticmethod
-    def Delete(conn, poster_ip, timestamp):
-        cur = conn.cursor()
+    def Delete(poster_ip, timestamp):
+        conn = DatabaseConnector.ConnectToDatabase()
+        cur = conn.cursor(buffered=True)
 
         # Attempt to delete the post
         try:
@@ -208,4 +238,5 @@ class Post:
             print(f"Error deleting post from database {e}")
             return {"errorMessage": "Unexpected error occured when posting"}
 
+        conn.close()
         return {"errorMessage": "Success"}

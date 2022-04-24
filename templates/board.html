@@ -7,18 +7,57 @@
     </head>
 
     <body>
-        <header>
-            <h1 style="color: #cc0000" id="title">/g/ - Technology</h1>
-            <form>
-                <label for="name">Name</label>
-                <input type="text" id="name" value="Anonymous"><br>
-                <label for="msg">Message</label>
-                <textarea id="msg" rows="5" columns="70"></textarea><br>
-                <label for="image">Image</label>
-                <input type="file" id="file"><br><br>
-                <input type="submit">
-            </form>
-        </header>
+        <div id="mainBoardContent">
+            <header>
+                <a href="/" style="position: absolute; top: 10px; left: 10px;">[Go back]</a>
+                <h1 style="color: #cc0000" id="title"></h1>
+                <form id="postThread">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" value="Anonymous"><br>
+                    <label for="msg">Message</label>
+                    <textarea id="msg" rows="5" columns="70"></textarea><br>
+                    <label for="image">Image</label>
+                    <input type="file" id="file"><br><br>
+                    <input type="submit" value="Submit a new thread">
+                </form>
+            </header>
+
+            <!-- Threads will be created here -->
+            <!--<div class="thread">-->
+                <!--<div class="threadHeader">-->
+                    <!--<b>Anonymous</b>-->
+                    <!--<p>04/24/22(Sun)10:35:38 No. 1666666666</p>-->
+                    <!--<a href="">[Reply]</a>-->
+                <!--</div>-->
+                <!--<div class="threadContent">-->
+                    <!--<img src="/static/res/merry1.png">-->
+                    <!--<p>-->
+                        <!--Hello world!-->
+                    <!--</p><br>-->
+                    <!--<div class="post">-->
+                        <!--<div class="threadHeader">-->
+                            <!--<b>Anonymous</b>-->
+                            <!--<p>04/24/22(Sun)10:35:38 No. 1666666666</p>-->
+                        <!--</div>-->
+                        <!--<img src="/static/res/merry1.png">-->
+                        <!--<p>Hello world!</p>-->
+                    <!--</div><br>-->
+                    <!--<div class="post">-->
+                        <!--<div class="threadHeader">-->
+                            <!--<b>Anonymous</b>-->
+                            <!--<p>04/24/22(Sun)10:35:38 No. 1666666666</p>-->
+                        <!--</div>-->
+                        <!--<img src="/static/res/merry1.png">-->
+                        <!--<p>Hello world!</p>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        </div>
+
+        <!-- This div is shown whenever board could not be found -->
+        <div id="notFound">
+            <h1>404 not found</h1>
+        </div>
 
         <script src="/static/script.js"></script>
         <script>LoadBoardContent()</script>

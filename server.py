@@ -10,8 +10,6 @@ app = Flask(
 
 CORS(app)
 
-conn = DatabaseConnector.ConnectToDatabase()
-
 @app.route('/')
 def Index():
     return render_template('index.html')
@@ -21,12 +19,15 @@ def Index():
 def ServeBoard(board_name: str):
     return render_template('board.html')
 
+@app.route('/reply/<post_id>')
+def ReplyTo(post_id: str):
+    return render_template('reply.html')
+
 
 # Optional 'acr' parameter can be specified
 @app.route('/boards', methods=["GET"])
 def GetBoards():
-    global conn
-    return Board.Read(conn, request.args['acr'])
+    return Board.Read(request.args['acr'])
 
 
 # Valid json body template for this request is following:
@@ -39,9 +40,7 @@ def GetBoards():
 # }
 @app.route('/post', methods=["POST"])
 def MakePost():
-    global conn
-    return Board.Create(
-        conn,
+    return Post.Create(
         request.json['board'],
         request.json['replyTo'],
         str(request.remote_addr),
@@ -56,9 +55,7 @@ def MakePost():
 #   2. replyTo
 @app.route('/post', methods=["GET"])
 def GetPosts():
-    global conn
     return Post.Read(
-        conn,
         request.args['board'],
         request.args['replyTo']
     )
@@ -70,9 +67,7 @@ def GetPosts():
 # }
 @app.route('/post', methods=['DELETE'])
 def DeletePost():
-    global conn
     return Post.Delete(
-        conn,
         str(request.remote_addr),
         request.json['timestamp']
     )
@@ -80,4 +75,3 @@ def DeletePost():
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=3000)
-    DatabaseConnector.CloseConnection(conn)
