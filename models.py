@@ -12,7 +12,7 @@ class DatabaseConnector:
         try:
             conn = mariadb.connect(
                 user="kchan_backend",
-                password="password",
+                password="y21iNpzzyF9shQLLPLbg",
                 host='127.0.0.1',
                 database='kchan'
             )
@@ -58,7 +58,7 @@ class Board:
     def Read(acronym):
         conn = DatabaseConnector.ConnectToDatabase()
         cur = conn.cursor(buffered=True)
-        boards = {}
+        boards = { "boards": [] }
 
         if acronym != "":
             cur.execute(
@@ -69,7 +69,7 @@ class Board:
 
             for Acronym, Name in cur:
                 board = Board(Acronym, Name)
-                boards[board.acronym] = board.__dict__
+                boards["boards"].append(board.__dict__)
 
         else:
             cur.execute(
@@ -79,7 +79,7 @@ class Board:
 
             for Acronym, Name in cur:
                 board = Board(Acronym, Name)
-                boards[board.acronym] = board.__dict__
+                boards["boards"].append(board.__dict__)
 
         conn.close()
         return boards
@@ -206,15 +206,15 @@ class Post:
             "FROM posts "
             "WHERE UNIX_TIMESTAMP(ReplyTo)=? "
             "AND Board=? "
-            "ORDER BY Timestamp",
+            "ORDER BY Timestamp DESC",
             (reply_to, board)
         )
 
-        posts = {}
+        posts = { "threads": [] }
         for Timestamp, Board, ReplyTo, UserAttachment, PosterName, PostContent in cur:
             ts = int(time.mktime(Timestamp.timetuple()))
             post = Post(ts, Board, int(reply_to), "N/A", str(UserAttachment), str(PosterName), str(PostContent))
-            posts[str(post.timestamp)] = post.__dict__
+            posts["threads"].append(post)
 
         conn.close()
         return posts

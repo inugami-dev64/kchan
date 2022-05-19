@@ -11,14 +11,11 @@ function ListBoards() {
     fetch(API_URL + "/boards?" + params)
         .then(response => response.json())
         .then(data => {
-            for(let key in data) {
-                let link = document.createElement("a");
-                let text = document.createTextNode(data[key].acronym + " - " + data[key].name);
-                link.appendChild(text);
-                link.href = API_URL + "/boards" + data[key].acronym;
-                let br = document.createElement("br");
-                document.getElementById("links").appendChild(link);
-                document.getElementById("links").appendChild(br);
+            for(let elem in data["boards"]) {
+                $('<a>' + elem.acronym + " - " + elem.name + "</a>", {
+                    href: API_URL + "/boards" + elem.acronym
+                }).appendTo('#links');
+                $("<br>").appendTo('#links');
             }
         });
 }
@@ -44,97 +41,68 @@ function CreateChildPosts(id, threadId) {
     fetch(API_URL + "/post?" + params)
         .then(response => response.json())
         .then(data => {
-            for(let key in data) {
-                let post = document.createElement("div");
-                post.setAttribute("class", "post");
+            for(let elem in data["posts"]) {
+                const postId = "post_" + data[key].timestamp.toString();
+                const postHeaderId = "postHeader_" + data[key].timestamp.toString();
+                const postContentId = "postContent_" + data[key].timestamp.toString();
 
-                // create thread header
-                let threadHeader = document.createElement("div");
-                threadHeader.setAttribute("class", "threadHeader");
-                let name = document.createElement("b");
-                let text = document.createTextNode(data[key].poster_name);
-                name.appendChild(text);
-                threadHeader.appendChild(name);
+                $('<div>', { id: postId, class: "post" }).appendTo(threadId);
 
+                // header and its contents
+                $('<div>', { id: postHeaderId, class: "threadHeader" }).appendTo(postId)
+                $('<b>' + data[key].poster_name + '</b>').appendTo(postHeaderId);
                 let date = new Date();
                 date.setTime(data[key].timestamp * 1000);
-                let dateElement = document.createElement("p");
-                text = document.createTextNode(date.toUTCString() + " No. " + data[key].timestamp);
-                dateElement.appendChild(text);
-                threadHeader.appendChild(dateElement);
+                $('<p>' + date.toUTCString() + " No. " + data[key].timestamp + "</p>").appendTo(postHeaderId);
 
-                post.appendChild(threadHeader);
+                // post content
+                $('<div>', { id: postContentId, class: "threadContent" }).appendTo(postId);
 
                 // create post image if possible
-                if(data[key].user_attachment != "None") {
-                    let img = document.createElement("img");
-                    img.setAttribute("src", data[key].user_attachment);
-                    post.appendChild(img);
-                }
+                if(data[key].user_attachment != "None")
+                    $('<img>', { src: data[key].user_attachment }).appendTo(postContentId);
 
-                // create post content
-                let content = document.createElement("p");
-                text = document.createTextNode(data[key].post_content);
-                content.appendChild(text);
-                post.appendChild(content);
-
-                document.getElementById(threadId).appendChild(post);
-                document.getElementById(threadId).appendChild(document.createElement("br"));
+                $('<p>' + data[key].post_content + '</p>').appendTo(postContentId);
+                $('<br>').appendTo(postContentId);
             }
         });
 }
 
 
 function CreateThread(threadDetails) {
+    const threadId = "thread_" + threadDetails.timestamp.toString();
+    const threadHeaderId = "threadHeader_" + threadDetails.timestamp.toString();
+    const threadContentId = "threadContent_" + threadDetails.timestamp;
 
-    let thread = document.createElement("div");
-    thread.setAttribute("class", "thread")
-    let threadHeader = document.createElement("div");
-    threadHeader.setAttribute("class", "threadHeader");
+    // thread with its header
+    $('<div>', { id: threadId, class: "thread" }).appendTo("#mainBoardContent"); 
 
-    // create thread header 
-    let user = document.createElement("b");
-    let text = document.createTextNode(threadDetails.poster_name);
-    user.appendChild(text);
-    threadHeader.appendChild(user);
-
+    // header stuff
     let date = new Date();
     date.setTime(threadDetails.timestamp * 1000);
-    let dateElement = document.createElement("p");
-    text = document.createTextNode(date.toUTCString() + " No. " + threadDetails.timestamp);
-    dateElement.appendChild(text);
-    threadHeader.appendChild(dateElement);
+    $('<div>', { id: threadHeaderId, class: "threadHeader" }).appendTo('#' + threadId);
+    $('<b>' + threadDetails.poster_name + "</b>").appendTo('#' + threadHeaderId);
+    $('<p>' + date.toUTCString() + " No. " + threadDetails.timestamp + '</p>').appendTo('#' + threadHeaderId);
+    $('<a href="javascript:DisplayReplyWindow(' + threadDetails.timestamp + ')">[Reply]</a>').appendTo('#' + threadHeaderId);
 
-    let reply = document.createElement("a");
-    reply.href = "javascript:window.open('/reply/" + threadDetails.timestamp + "?acr=" + threadDetails.board + "', '', 'width=400, height=290, scrollbars=no')";
-    text = document.createTextNode("[Reply]");
-    reply.appendChild(text);
-    threadHeader.appendChild(reply);
-    thread.appendChild(threadHeader);
-
-    // create thread body
-    const threadContentId = "threadContent_" + threadDetails.timestamp;
-    let threadContent = document.createElement("div");
-    threadContent.setAttribute("id", threadContentId);
-    threadContent.setAttribute("class", "threadContent");
+    // thread body
+    $('<div>', { id: threadContentId, class: "threadContent" }).appendTo('#' + threadId);
     
     // create image if present
     if(threadDetails.user_attachment != "None") {
-        let img = document.createElement("img");
-        img.setAttribute("src", threadDetails.user_attachment);
-        threadContent.appendChild(img);
+        const imgId = "image_" + threadDetails.timestamp;
+        const onclickCallback = "MaximizeImage(\"" + imgId + "\")";
+        $('<img>', { 
+            id: imgId,
+            src: threadDetails.user_attachment,
+            onclick: onclickCallback
+        }).appendTo('#' + threadContentId)
     }
 
-    let opMsg = document.createElement("p");
-    text = document.createTextNode(threadDetails.post_content);
-    opMsg.appendChild(text);
-
-    threadContent.appendChild(opMsg);
-    threadContent.appendChild(document.createElement("br"));
-    thread.appendChild(threadContent);
+    $('<p>' + threadDetails.post_content + '</p>').appendTo('#' + threadContentId);
+    $('<br>').appendTo('#' + threadContentId);
 
     // append all child posts for the thread
-    document.getElementById("mainBoardContent").appendChild(thread);
     CreateChildPosts(threadDetails.timestamp, threadContentId);
 }
 
@@ -145,8 +113,9 @@ function LoadThreads() {
     fetch(API_URL + "/post?" + params)
         .then(response => response.json())
         .then(data => {
-            for(let key in data) {
-                CreateThread(data[key]);
+            for(let id in data["threads"]) {
+                console.log(data["threads"][id]);
+                CreateThread(data["threads"][id]);
             }
         });
 }
@@ -159,16 +128,23 @@ function LoadBoardContent() {
     fetch(API_URL + "/boards?" + params)
         .then(response => response.json())
         .then(data => {
-            // no board was found
-            if(!(BOARD in data)) {
-                document.getElementById("mainBoardContent").style.display = "none";
-                document.getElementById("notFound").style.display = "block";
-                document.title = "404 not found";
+            let index = -1;
+            for(let i in data["boards"]) {
+                if(data["boards"][i].acronym == BOARD) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if(index == -1) {
+                $('#mainBoardContent').css("display", "none");
+                $('#notFound').css('display', 'block');
+                $('head').title = "404 not found";
             }
             else {
-                let title = data[BOARD].acronym + " - " + data[BOARD].name;
-                document.getElementById("title").innerHTML = title;
-                document.title = title;
+                let title = data["boards"][index].acronym + " - " + data["boards"][index].name;
+                $('#title').html(title);
+                $('title').html(title);
                 LoadThreads();
             }
         });
@@ -189,6 +165,11 @@ function LoadReply() {
     const params = new URLSearchParams(window.location.search);
     BOARD = params.get("acr");
     document.getElementById("title").innerHTML = "Replying to '" + replyTo + "'";
+}
+
+
+function LoadReply() {
+    DisplayReplyWindow();
 }
 
 
@@ -238,7 +219,25 @@ function SubmitPost(event) {
     }
 }
 
+
 if(window.location.href.search("/boards/") != -1 || window.location.href.search("/reply/") != -1) {
     const form = document.getElementById("postThread");
     form.addEventListener("submit", SubmitPost);
+}
+
+
+/*** Image manipulation ***/
+function MaximizeImage(imgId) {
+    $('#' + imgId).css("max-width", "100%");
+    $('#' + imgId).css("max-height", "100%");
+    $('#' + imgId).css("width", "auto");
+    $('#' + imgId).css("height", "auto");
+    $('#' + imgId).attr("onClick", 'MinimizeImage("' + imgId + '")');
+}
+
+
+function MinimizeImage(imgId) {
+    $('#' + imgId).css("max-width", "128px");
+    $('#' + imgId).css("max-height", "128px");
+    $('#' + imgId).attr('onClick', 'MaximizeImage("' + imgId + '")');
 }

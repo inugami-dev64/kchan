@@ -77,6 +77,12 @@ header {
     vertical-align: top;
 }
 
+
+#mainBoardContent .threadContent img {
+    cursor: pointer;
+}
+
+
 #mainBoardContent .threadContent p, .post {
     display: inline-block;
     overflow-wrap: break-word;
