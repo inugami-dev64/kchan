@@ -11,12 +11,13 @@ function ListBoards() {
     fetch(API_URL + "/boards?" + params)
         .then(response => response.json())
         .then(data => {
-            for(let elem in data["boards"]) {
-                $('<a>' + elem.acronym + " - " + elem.name + "</a>", {
-                    href: API_URL + "/boards" + elem.acronym
+            data["boards"].forEach((elem) => {
+                $('<a>', {
+                    "href": API_URL + "/boards" + elem['acronym'],
+                    text: elem['acronym'] + " - " + elem['name']
                 }).appendTo('#links');
                 $("<br>").appendTo('#links');
-            }
+            })
         });
 }
 
@@ -41,29 +42,32 @@ function CreateChildPosts(id, threadId) {
     fetch(API_URL + "/post?" + params)
         .then(response => response.json())
         .then(data => {
+            console.log(data["posts"])
             for(let elem in data["posts"]) {
-                const postId = "post_" + data[key].timestamp.toString();
-                const postHeaderId = "postHeader_" + data[key].timestamp.toString();
-                const postContentId = "postContent_" + data[key].timestamp.toString();
+                const postId = "post_" + data["posts"][elem].timestamp.toString();
+                const postHeaderId = "postHeader_" + data["posts"][elem].timestamp.toString();
+                const postContentId = "postContent_" + data["posts"][elem].timestamp.toString();
 
-                $('<div>', { id: postId, class: "post" }).appendTo(threadId);
+                console.log("postId: " + postId);
+                console.log("threadId: " + threadId);
+                $('<div>', { id: postId, class: "post" }).appendTo('#' + threadId);
 
                 // header and its contents
-                $('<div>', { id: postHeaderId, class: "threadHeader" }).appendTo(postId)
-                $('<b>' + data[key].poster_name + '</b>').appendTo(postHeaderId);
+                $('<div>', { id: postHeaderId, class: "threadHeader" }).appendTo('#' + postId)
+                $('<b>' + data["posts"][elem].poster_name + '</b>').appendTo('#' + postHeaderId);
                 let date = new Date();
-                date.setTime(data[key].timestamp * 1000);
-                $('<p>' + date.toUTCString() + " No. " + data[key].timestamp + "</p>").appendTo(postHeaderId);
+                date.setTime(data["posts"][elem].timestamp * 1000);
+                $('<p>' + date.toUTCString() + " No. " + data["posts"][elem].timestamp + "</p>").appendTo('#' + postHeaderId);
 
                 // post content
-                $('<div>', { id: postContentId, class: "threadContent" }).appendTo(postId);
+                $('<div>', { id: postContentId, class: "threadContent" }).appendTo('#' + postId);
 
                 // create post image if possible
-                if(data[key].user_attachment != "None")
-                    $('<img>', { src: data[key].user_attachment }).appendTo(postContentId);
+                if(data["posts"][elem].user_attachment != "None")
+                    $('<img>', { src: data["posts"][elem].user_attachment }).appendTo('#' + postContentId);
 
-                $('<p>' + data[key].post_content + '</p>').appendTo(postContentId);
-                $('<br>').appendTo(postContentId);
+                $('<p>' + data["posts"][elem].post_content + '</p>').appendTo('#' + postContentId);
+                $('<br>').appendTo('#' + postContentId);
             }
         });
 }
@@ -83,7 +87,7 @@ function CreateThread(threadDetails) {
     $('<div>', { id: threadHeaderId, class: "threadHeader" }).appendTo('#' + threadId);
     $('<b>' + threadDetails.poster_name + "</b>").appendTo('#' + threadHeaderId);
     $('<p>' + date.toUTCString() + " No. " + threadDetails.timestamp + '</p>').appendTo('#' + threadHeaderId);
-    $('<a href="javascript:DisplayReplyWindow(' + threadDetails.timestamp + ')">[Reply]</a>').appendTo('#' + threadHeaderId);
+    $('<a href="javascript:ReplyTo(' + threadDetails.timestamp + ')">[Reply]</a>').appendTo('#' + threadHeaderId);
 
     // thread body
     $('<div>', { id: threadContentId, class: "threadContent" }).appendTo('#' + threadId);
@@ -113,9 +117,8 @@ function LoadThreads() {
     fetch(API_URL + "/post?" + params)
         .then(response => response.json())
         .then(data => {
-            for(let id in data["threads"]) {
-                console.log(data["threads"][id]);
-                CreateThread(data["threads"][id]);
+            for(let id in data["posts"]) {
+                CreateThread(data["posts"][id]);
             }
         });
 }
@@ -173,11 +176,15 @@ function LoadReply() {
 }
 
 
-// Post Submit event listener
-function Post() {
-    let name = document.getElementById("name").value;
-    let msg = document.getElementById("msg").value;
+/*****************************/
+/***** Posting functions *****/
+/*****************************/
 
+
+// Post Submit event listener
+function Post(name, msg) {
+    console.log("Poster name: " + name);
+    console.log("Post message: " + msg);
     let jsonBody = {
         "board": BOARD,
         "replyTo": REPLY_TO,
@@ -192,41 +199,36 @@ function Post() {
         body: JSON.stringify(jsonBody),
         headers: { "Content-Type": "application/json" }
     }).then(() => {
-        if(!REPLY_TO)
-            window.location.reload();
-        else {
-            window.opener.location.reload(true);
-            window.close()
-        }
+        window.location.reload();
+        REPLY_TO = 0;
     }).catch(error => console.error(error))
 }
 
 
-function SubmitPost(event) {
-    let files = document.getElementById("file").files;   
-    event.preventDefault();
+function SubmitPost(formId) {
+    let files = $(formId + " > #file");
+    console.log(files)
+    files = $(formId + " > #file").get(0).files;
     if(files.length) {
         let file = files[0];
         let reader = new FileReader();
         reader.onloadend = () => {
             IMG_BASE64 = reader.result;
-            Post();
-            event.preventDefault();
+            console.log("reader finished");
+            Post($(formId + "> #name").val(), $(formId  + " > #msg").val());
         };
         reader.readAsDataURL(file);
     } else {
-        Post();
+        console.log("no files");
+        Post($(formId + " > #name").val(), $(formId + " > #msg").val());
     }
 }
 
 
-if(window.location.href.search("/boards/") != -1 || window.location.href.search("/reply/") != -1) {
-    const form = document.getElementById("postThread");
-    form.addEventListener("submit", SubmitPost);
-}
+/************************/
+/***** Image resizing ***/
+/************************/
 
-
-/*** Image manipulation ***/
 function MaximizeImage(imgId) {
     $('#' + imgId).css("max-width", "100%");
     $('#' + imgId).css("max-height", "100%");
@@ -240,4 +242,17 @@ function MinimizeImage(imgId) {
     $('#' + imgId).css("max-width", "128px");
     $('#' + imgId).css("max-height", "128px");
     $('#' + imgId).attr('onClick', 'MaximizeImage("' + imgId + '")');
+}
+
+
+function ReplyTo(postId) {
+    REPLY_TO = postId;
+    $("#postReply").prop("title", "Reply to " + postId.toString()); 
+    $("#postReply").on("click", "#submit", () => { 
+        REPLY_TO = postId;
+        SubmitPost("#postReply");
+    });
+    $(() => {
+        $( "#postReply" ).dialog();
+    });
 }

@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
         <link href="/static/style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
         <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
         <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
         <script src="/static/script.js"></script>
@@ -21,7 +22,7 @@
                     <textarea id="msg" rows="5" columns="70"></textarea><br>
                     <label for="image">Image</label>
                     <input type="file" id="file"><br><br>
-                    <input type="submit" value="Submit a new thread">
+                    <input type="button" value="Submit a new thread" id="submit" onclick="SubmitPost('#postThread')">
                 </form>
             </header>
         </div>
@@ -30,6 +31,14 @@
         <div id="notFound">
             <h1>404 not found</h1>
         </div>
+
+        <!-- This form is the content of floating reply modal -->
+        <form id="postReply" title="Reply to ">
+            <input type="text" id="name" placeholder="Name" value="Anonymous"><br>
+            <textarea id="msg" rows="5" columns="60"></textarea><br>
+            <input type="file" id="file"><br><br>
+            <input type="button" id="submit" value="Submit a reply">
+        </form>
 
         <script>LoadBoardContent()</script>
     </body>

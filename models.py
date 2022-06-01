@@ -12,7 +12,7 @@ class DatabaseConnector:
         try:
             conn = mariadb.connect(
                 user="kchan_backend",
-                password="y21iNpzzyF9shQLLPLbg",
+                password="password123",
                 host='127.0.0.1',
                 database='kchan'
             )
@@ -79,6 +79,7 @@ class Board:
 
             for Acronym, Name in cur:
                 board = Board(Acronym, Name)
+                print(f"{ Acronym }, { Name }")
                 boards["boards"].append(board.__dict__)
 
         conn.close()
@@ -210,11 +211,11 @@ class Post:
             (reply_to, board)
         )
 
-        posts = { "threads": [] }
+        posts = { "posts": [] }
         for Timestamp, Board, ReplyTo, UserAttachment, PosterName, PostContent in cur:
             ts = int(time.mktime(Timestamp.timetuple()))
             post = Post(ts, Board, int(reply_to), "N/A", str(UserAttachment), str(PosterName), str(PostContent))
-            posts["threads"].append(post)
+            posts["posts"].append(post)
 
         conn.close()
         return posts

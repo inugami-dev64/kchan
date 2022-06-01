@@ -98,6 +98,11 @@ header {
 }
 
 
+#postReply {
+    display: none;
+}
+
+
 /* Form styling */
 form label {
     background-color: #008800;
